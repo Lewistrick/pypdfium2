@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2022 geisserml <geisserml@gmail.com>
+# SPDX-FileCopyrightText: 2023 geisserml <geisserml@gmail.com>
 # SPDX-License-Identifier: Apache-2.0 OR BSD-3-Clause
 
 __all__ = ["V_PYPDFIUM2", "V_LIBPDFIUM", "IS_SOURCEBUILD"]
@@ -16,5 +16,6 @@ if V_BETA is not None:
 #: PDFium library version string (git tag or commit hash).
 V_LIBPDFIUM = "5567"
 
-#: Whether the included PDFium binary was built from source locally (:data:`True`) or downloaded from pdfium-binaries (:data:`False`).
+# TODO consider renaming or changing this variable
+#: Whether the included PDFium binary was downloaded from pdfium-binaries (False) or supplied locally (True).
 IS_SOURCEBUILD = False

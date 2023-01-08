@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-# SPDX-FileCopyrightText: 2022 geisserml <geisserml@gmail.com>
+# SPDX-FileCopyrightText: 2023 geisserml <geisserml@gmail.com>
 # SPDX-License-Identifier: Apache-2.0 OR BSD-3-Clause
 
 # NOTE Works on Linux/macOS/Windows (that is, at least on GitHub Actions)
@@ -8,6 +8,7 @@ import os
 import sys
 import shutil
 import argparse
+import urllib.request
 from os.path import join, abspath, dirname
 
 sys.path.insert(0, dirname(dirname(abspath(__file__))))
@@ -50,8 +51,22 @@ DefaultConfig = {
     "pdf_use_skia": False,
 }
 
-if sys.platform.startswith("darwin"):
+SyslibsConfig = {
+    "use_system_freetype": True,
+    "use_system_lcms2": True,
+    "use_system_libjpeg": True,
+    "use_system_libopenjpeg2": True,
+    "use_system_libpng": True,
+    "use_system_zlib": True,
+    "sysroot": "/",
+}
+
+
+if sys.platform.startswith("linux"):
+    SyslibsConfig["use_custom_libcxx"] = False
+elif sys.platform.startswith("darwin"):
     DefaultConfig["mac_deployment_target"] = "10.13.0"
+    SyslibsConfig["use_system_xcode"] = True
 
 
 def dl_depottools(do_update):
@@ -97,6 +112,20 @@ def dl_pdfium(GClient, do_update, revision):
         run_cmd([GClient, "sync", "--revision", "origin/%s" % revision, "--no-history", "--with_branch_heads"], cwd=SB_Dir)
     
     return is_sync
+
+
+def _dl_unbundler():
+
+    # Workaround: download missing tools for unbundle/replace_gn_files.py (syslibs build)
+
+    tool_dir = join(PDFiumDir,"tools","generate_shim_headers")
+    tool_file = join(tool_dir, "generate_shim_headers.py")
+    tool_url = "https://raw.githubusercontent.com/chromium/chromium/main/tools/generate_shim_headers/generate_shim_headers.py"
+
+    if not os.path.isdir(tool_dir):
+        os.makedirs(tool_dir)
+    if not os.path.exists(tool_file):
+        urllib.request.urlretrieve(tool_url, tool_file)
 
 
 def get_pdfium_version():
@@ -242,6 +271,8 @@ def main(
         b_update = False,
         b_revision = None,
         b_target = None,
+        b_use_syslibs = False,
+        b_win_sdk_dir = None,
     ):
     
     if not os.path.exists(OutputDir):
@@ -251,13 +282,13 @@ def main(
         b_revision = "main"
     if b_target is None:
         b_target = "pdfium"
+    if b_win_sdk_dir is None:
+        b_win_sdk_dir = R"C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64"
     
-    # TODO make windows sdk dir configurable
     if sys.platform.startswith("win32"):
         os.environ["DEPOT_TOOLS_WIN_TOOLCHAIN"] = "0"
-        WindowsSDK_DIR = R"C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64"
-        assert os.path.isdir(WindowsSDK_DIR)
-        os.environ["PATH"] += os.pathsep + WindowsSDK_DIR
+        assert os.path.isdir(b_win_sdk_dir)
+        os.environ["PATH"] += os.pathsep + b_win_sdk_dir
     
     dl_depottools(b_update)
     
@@ -269,8 +300,13 @@ def main(
     v_libpdfium = get_pdfium_version()
     if pdfium_dl_done:
         patch_pdfium(v_libpdfium)
+        if b_use_syslibs:
+            _dl_unbundler()
+            run_cmd(["python3", "build/linux/unbundle/replace_gn_files.py", "--system-libraries", "icu"], cwd=PDFiumDir)
     
     config_dict = DefaultConfig.copy()
+    if b_use_syslibs:
+        config_dict.update(SyslibsConfig)
     config_str = serialise_config(config_dict)
     print("\nBuild configuration:\n%s\n" % config_str)
     
@@ -307,6 +343,16 @@ def parse_args(argv):
         "--target", "-t",
         help = "PDFium build target (defaults to `pdfium`). Use `pdfium_all` to also build tests."
     )
+    parser.add_argument(
+        "--use-syslibs", "-l",
+        action = "store_true",
+        help = "Use system libraries instead of those bundled with PDFium. Make sure that freetype, lcms2, libjpeg, libopenjpeg2, libpng, zlib and icuuc are installed, and that $PKG_CONFIG_PATH is set correctly. You may also need to patch build/config/linux/pkg-config to not set PKG_CONFIG_LIBDIR.",
+        # TODO automatically patch pkg-config script or discuss a proper fix upstream
+    )
+    parser.add_argument(
+        "--win-sdk-dir",
+        help = "Path to the Windows SDK (Windows only)",
+    )
     
     return parser.parse_args(argv)
 
@@ -314,11 +360,13 @@ def parse_args(argv):
 def main_cli(argv=sys.argv[1:]):
     args = parse_args(argv)
     return main(
-        b_src_libname  = args.src_libname,
+        b_src_libname = args.src_libname,
         b_dest_libname = args.dest_libname,
-        b_update   = args.update,
+        b_update = args.update,
         b_revision = args.revision,
-        b_target   = args.target,
+        b_target = args.target,
+        b_use_syslibs = args.use_syslibs,
+        b_win_sdk_dir = args.win_sdk_dir,
     )
     
 
