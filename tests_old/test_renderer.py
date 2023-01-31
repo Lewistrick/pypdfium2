@@ -318,30 +318,28 @@ def test_render_pdfbuffer():
 
 
 @pytest.mark.parametrize(
-    ("draw_forms", "exp_color"),
+    ("with_forms", "exp_color"),
     [
         (False, (255, 255, 255)),
         (True, (0, 51, 113)),
     ]
 )
-def test_render_form(draw_forms, exp_color):
+def test_render_form(with_forms, exp_color):
     
-    pdf = pdfium.PdfDocument(TestFiles.form)
-    assert pdf._formenv is None
+    pdf = pdfium.PdfDocument(TestFiles.form, may_init_forms=with_forms)
+    if with_forms:
+        assert isinstance(pdf.formenv, pdfium.PdfFormEnv)
+    else:
+        assert pdf.formenv is None
     
     page = pdf.get_page(0)
     image = page.render(
-        draw_forms = draw_forms,
+        may_draw_forms = with_forms,
     ).to_pil()
     
     assert image.getpixel( (190, 190) ) == exp_color
     assert image.getpixel( (190, 430) ) == exp_color
     assert image.getpixel( (190, 480) ) == exp_color
-    
-    if draw_forms:
-        assert isinstance(pdf._formenv, pdfium.PdfFormEnv)
-    else:
-        assert pdf._formenv is None
 
 
 def test_numpy_nocopy(sample_page):

@@ -35,7 +35,15 @@ class PdfPage (AutoCloseable):
     def __init__(self, raw, pdf):
         self.raw = raw
         self.pdf = pdf
-        AutoCloseable.__init__(self, pdfium_c.FPDF_ClosePage)
+        AutoCloseable.__init__(self, self._close_impl, self.pdf)
+    
+    
+    @staticmethod
+    def _close_impl(raw, pdf):
+        if pdf.formenv:
+            pdfium_c.FORM_OnBeforeClosePage(raw, pdf.formenv)
+        pdfium_c.FPDF_ClosePage(raw)
+    
     
     @property
     def parent(self):
@@ -322,7 +330,7 @@ class PdfPage (AutoCloseable):
             scale = 1,
             rotation = 0,
             crop = (0, 0, 0, 0),
-            draw_forms = True,
+            may_draw_forms = True,
             bitmap_maker = PdfBitmap.new_native,
             color_scheme = None,
             fill_to_stroke = False,
@@ -343,7 +351,7 @@ class PdfPage (AutoCloseable):
             crop (tuple[float, float, float, float]):
                 Amount in PDF canvas units to cut off from page borders (left, bottom, right, top). Crop is applied after rotation.
                 
-            draw_forms (bool):
+            may_draw_forms (bool):
                 If True, render form fields.
                 
             bitmap_maker (typing.Callable):
@@ -425,15 +433,13 @@ class PdfPage (AutoCloseable):
         )
         bitmap.fill_rect(0, 0, width, height, fill_color)
         
-        # NOTE deliberately fails with dict access error in case of an invalid rotation value
         render_args = (bitmap, self, -crop[0], -crop[3], src_width, src_height, consts.RotationToConst[rotation], flags)
         
         if color_scheme is None:
             pdfium_c.FPDF_RenderPageBitmap(*render_args)
         else:
             
-            pause = pdfium_c.IFSDK_PAUSE()
-            pause.version = 1
+            pause = pdfium_c.IFSDK_PAUSE(version=1)
             utils.set_callback(pause, "NeedToPauseNow", lambda _: False)
             
             fpdf_cs = color_scheme.convert(rev_byteorder)
@@ -441,10 +447,8 @@ class PdfPage (AutoCloseable):
             assert status == pdfium_c.FPDF_RENDER_DONE
             pdfium_c.FPDF_RenderPage_Close(self)
         
-        if draw_forms and (self.pdf.get_formtype() != pdfium_c.FORMTYPE_NONE):
-            # FORM_OnAfterLoadPage() and FORM_OnBeforeClosePage() might need to be called as well, but we're not sure how to integrate this properly
-            formenv = self.pdf.init_formenv()
-            pdfium_c.FPDF_FFLDraw(formenv, *render_args)
+        if may_draw_forms and self.pdf.formenv:
+            pdfium_c.FPDF_FFLDraw(self.pdf.formenv, *render_args)
         
         return bitmap
 

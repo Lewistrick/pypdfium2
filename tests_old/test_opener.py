@@ -171,17 +171,6 @@ def test_object_hierarchy():
     assert isinstance(pdf, pdfium.PdfDocument)
     assert isinstance(pdf.raw, pdfium_c.FPDF_DOCUMENT)
     
-    formenv = pdf.init_formenv()
-    assert formenv is pdf._formenv
-    assert formenv is pdf.init_formenv()
-    assert formenv._finalizer.alive
-    assert isinstance(formenv, pdfium.PdfFormEnv)
-    assert isinstance(formenv.raw, pdfium_c.FPDF_FORMHANDLE)
-    assert isinstance(formenv.config, pdfium_c.FPDF_FORMFILLINFO)
-    formenv.close()
-    assert not formenv._finalizer.alive
-    assert pdf._formenv is None
-    
     page = pdf.get_page(0)
     assert isinstance(page, pdfium.PdfPage)
     assert isinstance(page.raw, pdfium_c.FPDF_PAGE)

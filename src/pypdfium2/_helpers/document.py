@@ -55,6 +55,7 @@ class PdfDocument (AutoCloseable):
             input,
             password = None,
             autoclose = False,
+            may_init_forms = True,  # TODO docs
         ):
         
         if isinstance(input, str):
@@ -70,7 +71,6 @@ class PdfDocument (AutoCloseable):
         
         self._data_holder = []
         self._data_closer = []
-        self._formenv = None
         
         if isinstance(self._input, pdfium_c.FPDF_DOCUMENT):
             self.raw = self._input
@@ -80,10 +80,23 @@ class PdfDocument (AutoCloseable):
             self._data_closer += to_close
         
         AutoCloseable.__init__(self, self._close_impl, self._data_holder, self._data_closer)
+        
+        self.formenv = None  # TODO docs
+        if may_init_forms:
+            self.formtype = pdfium_c.FPDF_GetFormType(self)  # TODO docs
+            self._has_forms = self.formtype != pdfium_c.FORMTYPE_NONE
+            if self._has_forms:
+                formconfig = pdfium_c.FPDF_FORMFILLINFO(version=2)
+                raw = pdfium_c.FPDFDOC_InitFormFillEnvironment(self, formconfig)
+                self.formenv = PdfFormEnv(raw, formconfig, self)
+        else:
+            self.formtype = pdfium_c.FORMTYPE_NONE
+            self._has_forms = False
     
     
     @staticmethod
     def _close_impl(raw, data_holder, data_closer):
+        # can't close formenv here, would cause circular reference
         pdfium_c.FPDF_CloseDocument(raw)
         for data in data_holder:
             id(data)
@@ -94,8 +107,8 @@ class PdfDocument (AutoCloseable):
     
     
     def close(self):
-        if self._formenv is not None:
-            self._formenv.close()
+        if self.formenv:
+            self.formenv.close()
         AutoCloseable.close(self)
     
     
@@ -121,39 +134,6 @@ class PdfDocument (AutoCloseable):
         """
         new_pdf = pdfium_c.FPDF_CreateNewDocument()
         return cls(new_pdf)
-    
-    
-    def init_formenv(self, config=None):
-        """
-        Initialise a form environment for this document.
-        If already initialised, the existing handle will be returned.
-        
-        Parameters:
-            config (FPDF_FORMFILLINFO | None):
-                Form configuration interface. If None, a default one will be used.
-        Returns:
-            PdfFormEnv: Handle to the form environment.
-        """
-        
-        if self._formenv is not None:
-            return self._formenv
-        
-        if config is None:
-            config = pdfium_c.FPDF_FORMFILLINFO()
-            config.version = 2
-        
-        raw = pdfium_c.FPDFDOC_InitFormFillEnvironment(self, config)
-        self._formenv = PdfFormEnv(raw, config, self)
-        
-        return self._formenv
-    
-    
-    def get_formtype(self):
-        """
-        Returns:
-            int: The form type of the document (:attr:`FORMTYPE_*`). :attr:`FORMTYPE_NONE` if it has no forms.
-        """
-        return pdfium_c.FPDF_GetFormType(self)
     
     
     def get_pagemode(self):
@@ -328,11 +308,21 @@ class PdfDocument (AutoCloseable):
         """
         Returns:
             PdfPage: The page at *index* (zero-based).
+        Note:
+            This calls ``FORM_OnAfterLoadPage()`` if the document has an active form env.
+            The form env must no be closed before the page is closed!
         """
+        
         raw_page = pdfium_c.FPDF_LoadPage(self, index)
         if not raw_page:
             raise PdfiumError("Failed to load page.")
-        return PdfPage(raw_page, self)
+        page = PdfPage(raw_page, self)
+        
+        if self.formenv:
+            pdfium_c.FORM_OnAfterLoadPage(page, self.formenv)
+        # TODO attach page to formenv and add safety check on form env closing
+        
+        return page
     
     
     def new_page(self, width, height, index=None):
@@ -629,7 +619,7 @@ class PdfFormEnv (AutoCloseable):
     def _close_impl(raw, config, pdf):
         pdfium_c.FPDFDOC_ExitFormFillEnvironment(raw)
         id(config)
-        pdf._formenv = None
+        pdf.formenv = None
 
 
 class PdfXObject (AutoCloseable):

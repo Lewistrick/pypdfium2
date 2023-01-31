@@ -33,7 +33,7 @@ def main(args):
     if pagemode != pdfium_c.PAGEMODE_USENONE:
         print("Page Mode: %s" % consts.PageModeToStr.get(pagemode))
     
-    formtype = pdf.get_formtype()
+    formtype = pdf.formtype
     if formtype != pdfium_c.FORMTYPE_NONE:
         print("Forms: %s" % consts.FormTypeToStr.get(formtype))
     

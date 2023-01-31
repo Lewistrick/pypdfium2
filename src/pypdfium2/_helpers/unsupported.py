@@ -37,8 +37,7 @@ class PdfUnspHandler:
                 If True, add a default callback that will log unsupported features as warning.
         """
         
-        self._config = pdfium_c.UNSUPPORT_INFO()
-        self._config.version = 1
+        self._config = pdfium_c.UNSUPPORT_INFO(version=1)
         utils.set_callback(self._config, "FSDK_UnSupport_Handler", self)
         pdfium_c.FSDK_SetUnSpObjProcessHandler(self._config)
         

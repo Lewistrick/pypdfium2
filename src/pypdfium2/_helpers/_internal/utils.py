@@ -30,6 +30,7 @@ def color_tohex(color, rev_byteorder):
 
 
 def set_callback(struct, fname, callback):
+    # fancy hack to extract CFUNCTYPE definition and wrap callback
     setattr(struct, fname, type(getattr(struct, fname))(callback))
 
 
@@ -82,8 +83,7 @@ def get_bufreader(buffer):
 
 
 def get_bufwriter(buffer):
-    writer = pdfium_c.FPDF_FILEWRITE()
-    writer.version = 1
+    writer = pdfium_c.FPDF_FILEWRITE(version=1)
     set_callback(writer, "WriteBlock", _buffer_writer(buffer))
     return writer
 

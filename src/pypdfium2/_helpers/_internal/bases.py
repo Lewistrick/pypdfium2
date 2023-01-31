@@ -21,8 +21,7 @@ class AutoCastable:
     def _as_parameter_(self):  # ctypes hook
         return self.raw
     
-    def __bool__(self):
-        # wrapper classes should always evaluate to true (included in this class for convenience)
+    def __bool__(self):  # FIXME presumably not necessary, should be python default behaviour
         return True
 
 

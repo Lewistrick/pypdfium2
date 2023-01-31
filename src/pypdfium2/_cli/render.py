@@ -159,7 +159,7 @@ def main(args):
         color_scheme = cs,
         optimize_mode = args.optimize_mode,
         draw_annots = not args.no_annotations,
-        draw_forms = not args.no_forms,
+        may_draw_forms = not args.no_forms,
         force_halftone = args.force_halftone,
         rev_byteorder = args.rev_byteorder,
         prefer_bgrx = args.prefer_bgrx,
