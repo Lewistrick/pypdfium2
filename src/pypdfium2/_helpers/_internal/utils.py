@@ -89,7 +89,6 @@ def get_bufwriter(buffer):
 
 
 def pages_c_array(pages):
-    # TODO remove explicit raw access, if possible (should be)
     if not pages:
         return None, 0
     count = len(pages)
