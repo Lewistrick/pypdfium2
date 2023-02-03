@@ -122,8 +122,7 @@ def test_render_multipage(tmp_path):
     run_cli(["render", TestResources.multipage, "-o", out_dir, "--scale", 0.2, "-f", "jpg"])
     
     out_files = list(out_dir.iterdir())
-    assert len(out_files) == 3
-    assert [f.name for f in out_files] == ['multipage_3.jpg', 'multipage_2.jpg', 'multipage_1.jpg']
+    assert sorted([f.name for f in out_files]) == ["multipage_1.jpg", "multipage_2.jpg", "multipage_3.jpg"]
 
 
 def test_version():
