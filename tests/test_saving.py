@@ -39,7 +39,7 @@ def _save_tofile(version, tmp_path, use_str):
     
     saved_pdf = pdfium.PdfDocument(path)
     handler.send(saved_pdf)
-    path.unlink()
+    # path.unlink()  # FIXME fails on Windows
 
 
 parametrize_saving_version = pytest.mark.parametrize("version", [None, 14, 17])

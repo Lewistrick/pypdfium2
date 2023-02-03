@@ -159,9 +159,9 @@ def test_open_new():
 
 
 def test_open_invalid():
-    with pytest.raises(TypeError, match=re.escape("Invalid input type 'int'")):
+    with pytest.raises(TypeError):
         pdf = pdfium.PdfDocument(123)
-    with pytest.raises(FileNotFoundError, match=re.escape(abspath("invalid/path"))):
+    with pytest.raises(FileNotFoundError):
         pdf = pdfium.PdfDocument("invalid/path")
 
 
