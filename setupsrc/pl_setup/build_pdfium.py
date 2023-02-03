@@ -140,7 +140,7 @@ def get_pdfium_version():
     tag_commit = tag_commit[:7]
     tag = ref.split("/")[-1]
     
-    print("Current head %s, latest tagged commit %s (%s)" % (head_commit, tag_commit, tag))
+    print("Current head %s, latest tagged commit %s (%s)" % (head_commit, tag_commit, tag), file=sys.stderr)
     
     if head_commit == tag_commit:
         v_libpdfium = tag

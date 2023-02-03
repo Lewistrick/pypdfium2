@@ -132,8 +132,7 @@ Here are some examples of using the support model API.
       print(
           "    " * item.level +
           "[%s] %s -> %s  # %s %s" % (
-              state, item.title, target,
-              pdfium.ViewmodeToStr[item.view_mode],
+              state, item.title, target, item.view_mode,
               [round(c, n_digits) for c in item.view_pos],
           )
       )
@@ -150,7 +149,7 @@ Here are some examples of using the support model API.
   
   # Locate objects on the page
   for obj in page.get_objects():
-      print("    "*obj.level + pdfium.ObjectTypeToStr[obj.type], obj.get_pos())
+      print("    "*obj.level + str(obj.type), obj.get_pos())
   ```
 
 * Render a single page
@@ -565,8 +564,8 @@ pypdfium2 also has some drawbacks, of which you will be informed below.
 
 pypdfium2 built with mainstream ctypesgen cannot be used with releases 3.7.6 and 3.8.1 of the CPython interpreter due to a [regression](https://github.com/python/cpython/pull/16799#issuecomment-612353119) that [broke](https://github.com/ctypesgen/ctypesgen/issues/77) ctypesgen-created string handling code.
 
-However, we are currently [making efforts](https://github.com/ctypesgen/ctypesgen/pull/162) to remove ctypesgen's wonky string code
-and hope to build the next major release (4) of pypdfium2 with a patched version of ctypesgen.
+However, we are currently [making efforts](https://github.com/ctypesgen/ctypesgen/pull/162) to remove ctypesgen's wonky string code.
+Since version 4, pypdfium2 releases will be built with a patched variant of ctypesgen.
 
 #### Risk of unknown object lifetime violations
 
