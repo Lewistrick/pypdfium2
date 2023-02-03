@@ -2,6 +2,8 @@
 # SPDX-FileCopyrightText: 2023 geisserml <geisserml@gmail.com>
 # SPDX-License-Identifier: Apache-2.0 OR BSD-3-Clause
 
+# NOTE only runs from main branch for now
+
 import os
 import sys
 import time
