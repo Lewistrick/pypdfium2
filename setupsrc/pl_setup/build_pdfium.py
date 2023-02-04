@@ -32,13 +32,16 @@ PDFiumDir      = join(SB_Dir, "pdfium")
 PDFiumBuildDir = join(PDFiumDir, "out", "Default")
 OutputDir      = join(DataTree, PlatformNames.sourcebuild)
 
-PdfiumMainPatches = [
+PatchesMain = [
     (join(PatchDir, "shared_library.patch"), PDFiumDir),
     (join(PatchDir, "public_headers.patch"), PDFiumDir),
 ]
-PdfiumWinPatches = [
+PatchesWindows = [
     (join(PatchDir, "win", "pdfium.patch"), PDFiumDir),
     (join(PatchDir, "win", "build.patch"), join(PDFiumDir, "build")),
+]
+PatchesSyslibs = [
+    (join(PatchDir, "syslibs_sourcebuild.patch"), join(PDFiumDir, "build"))
 ]
 
 DefaultConfig = {
@@ -181,9 +184,9 @@ def _apply_patchset(patchset):
 
 
 def patch_pdfium(v_libpdfium):
-    _apply_patchset(PdfiumMainPatches)
+    _apply_patchset(PatchesMain)
     if sys.platform.startswith("win32"):
-        _apply_patchset(PdfiumWinPatches)
+        _apply_patchset(PatchesWindows)
         _create_resources_rc(v_libpdfium)
 
 
@@ -303,6 +306,8 @@ def main(
         if b_use_syslibs:
             _dl_unbundler()
             run_cmd(["python3", "build/linux/unbundle/replace_gn_files.py", "--system-libraries", "icu"], cwd=PDFiumDir)
+            # FIXME needs reset if doing normal sourcebuild afterwards
+            _apply_patchset(PatchesSyslibs)
     
     config_dict = DefaultConfig.copy()
     if b_use_syslibs:
@@ -346,8 +351,7 @@ def parse_args(argv):
     parser.add_argument(
         "--use-syslibs", "-l",
         action = "store_true",
-        help = "Use system libraries instead of those bundled with PDFium. Make sure that freetype, lcms2, libjpeg, libopenjpeg2, libpng, zlib and icuuc are installed, and that $PKG_CONFIG_PATH is set correctly. You may also need to patch build/config/linux/pkg-config to not set PKG_CONFIG_LIBDIR.",
-        # TODO automatically patch pkg-config script or discuss a proper fix upstream
+        help = "Use system libraries instead of those bundled with PDFium. Make sure that freetype, lcms2, libjpeg, libopenjpeg2, libpng, zlib and icuuc are installed, and that $PKG_CONFIG_PATH is set correctly.",
     )
     parser.add_argument(
         "--win-sdk-dir",

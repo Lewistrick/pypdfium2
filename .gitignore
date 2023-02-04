@@ -10,6 +10,8 @@ data/
 
 docs/build/
 !docs/build/.gitkeep
+
+# FIXME changes to patches are still ignored?
 sourcebuild/
 !sourcebuild/patches
 
