@@ -23,25 +23,25 @@ except ImportError:
 
 SubCommands = {
     "render":
-        "Rasterize PDF pages",
+        "rasterize pages",
     "toc":
-        "Show PDF table of contents",
+        "print table of contents",
     "arrange":
-        "Rearrange/merge PDFs",
+        "rearrange/merge documents",
     "tile":
-        "Perform page tiling (N-up)",
+        "tile pages (N-up)",
     "pdfinfo":
-        "Print info on document and pages",
+        "print info on document and pages",
     "pageobjects":
-        "Print info on page objects",
+        "print info on page objects",
     "extract-text":
-        "Extract text from PDF pages",
+        "extract text",
     "extract-images":
-        "Extract images from PDF pages",
+        "extract images",
     "imgtopdf":
-        "Convert images to PDF",
+        "convert images to PDF",
     "attachments":
-        "Work with PDF attachments",
+        "list/extract/edit embedded files",
 }
 
 CmdToModule = {n: importlib.import_module("pypdfium2._cli.%s" % n.replace("-", "_")) for n in SubCommands}
