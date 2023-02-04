@@ -301,13 +301,16 @@ def main(
     
     pdfium_dl_done = dl_pdfium(GClient, b_update, b_revision)
     v_libpdfium = get_pdfium_version()
+    
     if pdfium_dl_done:
         patch_pdfium(v_libpdfium)
         if b_use_syslibs:
-            _dl_unbundler()
-            run_cmd(["python3", "build/linux/unbundle/replace_gn_files.py", "--system-libraries", "icu"], cwd=PDFiumDir)
             # FIXME needs reset if doing normal sourcebuild afterwards
             _apply_patchset(PatchesSyslibs)
+            _dl_unbundler()
+
+    if b_use_syslibs:
+        run_cmd(["python3", "build/linux/unbundle/replace_gn_files.py", "--system-libraries", "icu"], cwd=PDFiumDir)
     
     config_dict = DefaultConfig.copy()
     if b_use_syslibs:

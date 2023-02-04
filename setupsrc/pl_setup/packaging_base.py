@@ -4,6 +4,7 @@
 # No external dependencies shall be imported in this file
 
 import os
+import sys
 import shutil
 import platform
 import sysconfig
@@ -190,7 +191,7 @@ def get_wheel_tag(pl_name):
 
 def run_cmd(command, cwd, capture=False, check=True, **kwargs):
     
-    print('%s ("%s")' % (command, cwd))
+    print('%s ("%s")' % (command, cwd), file=sys.stderr)
     if capture:
         kwargs.update( dict(stdout=subprocess.PIPE, stderr=subprocess.STDOUT) )
     
