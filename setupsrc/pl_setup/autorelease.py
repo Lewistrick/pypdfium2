@@ -57,7 +57,7 @@ def do_versioning(latest):
     
     # sourcebuild version changes must never be checked into version control
     # (autorelease can't work with that state because it needs information about the previous release for its version changes)
-    assert not VerNamespace["IS_SOURCEBUILD"]
+    assert VerNamespace["V_BUILDNAME"] == "pdfium-binaries"
     assert VerNamespace["V_LIBPDFIUM"].isnumeric()
     
     v_beta = VerNamespace["V_BETA"]

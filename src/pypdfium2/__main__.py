@@ -9,11 +9,7 @@ import argparse
 import importlib
 import pypdfium2._helpers as pdfium
 from pypdfium2._helpers._internal import bases
-from pypdfium2.version import (
-    V_PYPDFIUM2,
-    V_LIBPDFIUM,
-    IS_SOURCEBUILD,
-)
+from pypdfium2.version import *
 
 try:
     import argcomplete
@@ -46,10 +42,7 @@ def get_parser():
     main_parser.add_argument(
         "--version", "-v",
         action = "version",
-        version = "pypdfium2 %s (libpdfium %s, %s build)" % (
-            V_PYPDFIUM2, V_LIBPDFIUM,
-            "custom" if IS_SOURCEBUILD else "pdfium-binaries",
-        ),
+        version = "pypdfium2 %s (libpdfium %s, %s build)" % (V_PYPDFIUM2, V_LIBPDFIUM, V_BUILDNAME),
     )
     subparsers = main_parser.add_subparsers(dest="subcommand")
     

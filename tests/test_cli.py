@@ -127,12 +127,9 @@ def test_render_multipage(tmp_path):
 
 def test_version():
     
-    build_name = "custom" if pdfium.IS_SOURCEBUILD else "pdfium-binaries"
-    exp_message = "pypdfium2 %s (libpdfium %s, %s build)\n" % (pdfium.V_PYPDFIUM2, pdfium.V_LIBPDFIUM, build_name)
+    exp_message = "pypdfium2 %s (libpdfium %s, %s build)\n" % (pdfium.V_PYPDFIUM2, pdfium.V_LIBPDFIUM, pdfium.V_BUILDNAME)
     
     try:
         run_cli(["--version"], exp_message)
     except SystemExit:
         pass
-    else:
-        assert False

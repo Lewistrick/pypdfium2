@@ -68,7 +68,10 @@ def mkwheel(pl_name):
     
     ver_changes = dict()
     ver_changes["V_LIBPDFIUM"] = str(v_libpdfium)
-    ver_changes["IS_SOURCEBUILD"] = (pl_name == PlatformNames.sourcebuild)
+    if pl_name == PlatformNames.sourcebuild:
+        ver_changes["V_BUILDNAME"] = "source"
+    else:
+        ver_changes["V_BUILDNAME"] = "pdfium-binaries"
     set_versions(ver_changes)
     
     clean_artefacts()
