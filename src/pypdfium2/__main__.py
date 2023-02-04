@@ -22,26 +22,16 @@ except ImportError:
 
 
 SubCommands = {
-    "render":
-        "rasterize pages",
-    "toc":
-        "print table of contents",
-    "arrange":
-        "rearrange/merge documents",
-    "tile":
-        "tile pages (N-up)",
-    "pdfinfo":
-        "print info on document and pages",
-    "pageobjects":
-        "print info on page objects",
-    "extract-text":
-        "extract text",
-    "extract-images":
-        "extract images",
-    "imgtopdf":
-        "convert images to PDF",
-    "attachments":
-        "list/extract/edit embedded files",
+    "render":         "rasterize pages",
+    "toc":            "print table of contents",
+    "arrange":        "rearrange/merge documents",
+    "tile":           "tile pages (N-up)",
+    "pdfinfo":        "print info on document and pages",
+    "pageobjects":    "print info on page objects",
+    "extract-text":   "extract text",
+    "extract-images": "extract images",
+    "imgtopdf":       "convert images to PDF",
+    "attachments":    "list/extract/edit embedded files",
 }
 
 CmdToModule = {n: importlib.import_module("pypdfium2._cli.%s" % n.replace("-", "_")) for n in SubCommands}
@@ -64,9 +54,7 @@ def get_parser():
     subparsers = main_parser.add_subparsers(dest="subcommand")
     
     for name, help in SubCommands.items():
-        subparser = subparsers.add_parser(
-            name, description=help, help=help,
-        )
+        subparser = subparsers.add_parser(name, description=help, help=help)
         module = CmdToModule[name]
         module.attach(subparser)
     
