@@ -10,11 +10,6 @@ import pypdfium2.raw as pdfium_c
 
 # TODO consider adding PdfRectangle support model to calculate size and corner points
 
-
-def _to_radian(angle):
-    return (angle/180) * math.pi
-
-
 class PdfMatrix:
     """
     PDF transformation matrix helper class.
@@ -127,7 +122,7 @@ class PdfMatrix:
             angle (float): Clockwise angle in degrees to rotate the matrix.
             ccw (bool): If True, rotate counter-clockwise.
         """
-        angle = _to_radian(angle)
+        angle = math.radians(angle)
         c, s = math.cos(angle), math.sin(angle)
         return self.multiply( PdfMatrix(c, s, -s, c) if ccw else PdfMatrix(c, -s, s, c) )
     
@@ -147,7 +142,9 @@ class PdfMatrix:
             x_angle (float): Inner angle in degrees to skew the X axis.
             y_angle (float): Inner angle in degrees to skew the Y axis.
         """
-        return self.multiply( PdfMatrix(1, math.tan(_to_radian(x_angle)), math.tan(_to_radian(y_angle)), 1) )
+        b = math.tan( math.radians(x_angle) )
+        c = math.tan( math.radians(y_angle) )
+        return self.multiply( PdfMatrix(1, b, c, 1) )
     
     
     def on_point(self, x, y):
