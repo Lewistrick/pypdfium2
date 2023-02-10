@@ -116,13 +116,15 @@ class PdfMatrix:
         return self.multiply( PdfMatrix(x, 0, 0, y) )
     
     
-    def rotate(self, angle, ccw=False):
+    def rotate(self, angle, ccw=False, rad=False):
         """
         Parameters:
-            angle (float): Clockwise angle in degrees to rotate the matrix.
+            angle (float): Angle by which to rotate the matrix.
             ccw (bool): If True, rotate counter-clockwise.
+            rad (bool): If True, interpret the angle as radians.
         """
-        angle = math.radians(angle)
+        if not rad:
+            angle = math.radians(angle)
         c, s = math.cos(angle), math.sin(angle)
         return self.multiply( PdfMatrix(c, s, -s, c) if ccw else PdfMatrix(c, -s, s, c) )
     
@@ -136,15 +138,17 @@ class PdfMatrix:
         return self.scale(x=(-1 if v else 1), y=(-1 if h else 1))
     
     
-    def skew(self, x_angle, y_angle):
+    def skew(self, x_angle, y_angle, rad=False):
         """
         Parameters:
-            x_angle (float): Inner angle in degrees to skew the X axis.
-            y_angle (float): Inner angle in degrees to skew the Y axis.
+            x_angle (float): Inner angle to skew the X axis.
+            y_angle (float): Inner angle to skew the Y axis.
+            rad (bool): If True, interpret the angles as radians.
         """
-        b = math.tan( math.radians(x_angle) )
-        c = math.tan( math.radians(y_angle) )
-        return self.multiply( PdfMatrix(1, b, c, 1) )
+        if not rad:
+            x_angle = math.radians(x_angle)
+            y_angle = math.radians(y_angle)
+        return self.multiply( PdfMatrix(1, math.tan(x_angle), math.tan(y_angle), 1) )
     
     
     def on_point(self, x, y):
