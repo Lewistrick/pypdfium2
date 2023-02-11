@@ -225,6 +225,7 @@ class PdfTextSearcher (AutoCloseable):
     def parent(self):
         return self.textpage
     
+    
     def _get_occurrence(self, find_func):
         success = find_func(self)
         if not success:
@@ -233,6 +234,7 @@ class PdfTextSearcher (AutoCloseable):
         count = pdfium_c.FPDFText_GetSchCount(self)
         return index, count
     
+    
     def get_next(self):
         """
         Returns:
@@ -240,6 +242,7 @@ class PdfTextSearcher (AutoCloseable):
             or None if the last occurrence was passed.
         """
         return self._get_occurrence(pdfium_c.FPDFText_FindNext)
+    
     
     def get_prev(self):
         """
